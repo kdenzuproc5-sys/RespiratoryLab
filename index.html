@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<!--
+  HARMLESS PRANK WEBSITE — ENTERTAINMENT ONLY.
+  No real hacking, network requests, device access, or data
+  collection occurs anywhere in this project. All content shown
+  is purely cosmetic and randomly generated. The final screen
+  explicitly reveals this is just a joke. Everything (HTML + CSS
+  + JS) is combined into this one file for easy use in SPCK.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>SYSTEM ANALYSIS</title>
+
+<style>
+  /* =====================================================
+     STYLES — black background, glowing green monospace
+     terminal, subtle matrix rain, animated cursor.
+  ===================================================== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
+    overflow: hidden;
+  }
+
+  body { font-family: 'Courier New', Courier, monospace; }
+
+  #matrixCanvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 0;
+    opacity: 0.25;
+  }
+
+  #terminal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 1;
+    color: #00FF41;
+    padding: 16px;
+    font-size: 14px;
+    line-height: 1.4;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    text-shadow: 0 0 4px #00FF41, 0 0 8px #00FF41, 0 0 14px rgba(0, 255, 65, 0.6);
+  }
+
+  #output p {
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin: 0;
+    animation: fadeIn 0.15s ease-in;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  #cursor {
+    position: relative;
+    z-index: 2;
+    display: inline-block;
+    margin-left: 16px;
+    color: #00FF41;
+    text-shadow: 0 0 6px #00FF41, 0 0 10px #00FF41;
+    animation: blink 1s steps(1) infinite;
+  }
+
+  @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+
+  body.flicker #terminal { animation: flickerAnim 0.15s linear; }
+
+  @keyframes flickerAnim {
+    0%   { opacity: 1; }
+    30%  { opacity: 0.4; }
+    60%  { opacity: 0.9; }
+    100% { opacity: 1; }
+  }
+
+  #runAgainBtn {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    background: #000000;
+    border: 2px solid #00FF41;
+    color: #00FF41;
+    font-family: inherit;
+    font-size: 16px;
+    letter-spacing: 1px;
+    padding: 12px 28px;
+    cursor: pointer;
+    border-radius: 4px;
+    text-shadow: 0 0 6px #00FF41;
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.6), 0 0 20px rgba(0, 255, 65, 0.3);
+    transition: opacity 0.6s ease, transform 0.2s ease;
+  }
+
+  #runAgainBtn:active { transform: translateX(-50%) scale(0.96); }
+  #runAgainBtn.hidden { display: none; }
+
+  #terminal::-webkit-scrollbar { width: 6px; }
+  #terminal::-webkit-scrollbar-track { background: #000000; }
+  #terminal::-webkit-scrollbar-thumb { background-color: #0a5c22; border-radius: 3px; }
+
+  @media (max-width: 480px) {
+    #terminal { font-size: 12px; padding: 10px; }
+    #runAgainBtn { font-size: 14px; padding: 10px 20px; bottom: 20px; }
+  }
+
+  @media (min-width: 900px) {
+    #terminal { font-size: 16px; padding: 24px; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- Subtle matrix-style falling-character background -->
+  <canvas id="matrixCanvas"></canvas>
+
+  <!-- Main terminal surface where all typed output appears -->
+  <div id="terminal">
+    <div id="output"></div>
+    <span id="cursor">&#9608;</span>
+  </div>
+
+  <!-- "Run Again" button, hidden until the ending screen finishes -->
+  <button id="runAgainBtn" class="hidden">&#9654; Run Again</button>
+
+<script>
+  /* =====================================================
+     SCRIPT — prank sequence logic + matrix background.
+     ENTERTAINMENT ONLY. No real hacking, network requests,
+     device access, or data collection. Every value shown
+     is randomly generated in-memory purely for display, and
+     the ending screen tells the visitor plainly it was a joke.
+  ===================================================== */
+  (function () {
+    'use strict';
+
+    var terminalEl = document.getElementById('terminal');
+    var outputEl = document.getElementById('output');
+    var runAgainBtn = document.getElementById('runAgainBtn');
+    var canvas = document.getElementById('matrixCanvas');
+    var ctx = canvas.getContext('2d');
+
+    function sleep(ms) {
+      return new Promise(function (resolve) { setTimeout(resolve, ms); });
+    }
+    function randInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    function scrollToBottom() {
+      try { terminalEl.scrollTop = terminalEl.scrollHeight; } catch (e) {}
+    }
+    function newLine() {
+      var p = document.createElement('p');
+      outputEl.appendChild(p);
+      scrollToBottom();
+      return p;
+    }
+    function clearTerminal() {
+      try { outputEl.innerHTML = ''; } catch (e) {}
+    }
+    function flicker() {
+      try {
+        document.body.classList.add('flicker');
+        setTimeout(function () { document.body.classList.remove('flicker'); }, 150);
+      } catch (e) {}
+    }
+
+    // -------- fake data generators --------
+    function fakeIP() {
+      return randInt(1,255)+'.'+randInt(0,255)+'.'+randInt(0,255)+'.'+randInt(1,254);
+    }
+    function fakeHex(length) {
+      var chars = '0123456789ABCDEF', s = '';
+      for (var i=0;i<length;i++) s += chars.charAt(randInt(0,15));
+      return s;
+    }
+    function fakeHash() { return fakeHex(64).toLowerCase(); }
+    function fakeId(prefix) { return prefix + '-' + randInt(10000,99999); }
+    function fakePercentStat() { return randInt(5,99) + '%'; }
+    function fakeTimestamp() {
+      var now = new Date(Date.now() - randInt(0, 1000*60*60*24*30));
+      return now.toISOString().replace('T',' ').split('.')[0];
+    }
+
+    // -------- typewriter --------
+    function typeLine(text) {
+      return new Promise(function (resolve) {
+        var line = newLine();
+        var i = 0;
+        function step() {
+          try {
+            if (i >= text.length) { resolve(); return; }
+            line.textContent += text.charAt(i);
+            i++;
+            scrollToBottom();
+            setTimeout(step, randInt(4, 20));
+          } catch (e) { resolve(); }
+        }
+        step();
+      });
+    }
+    function printData(label, value) {
+      return typeLine('   ' + label + ': ' + value);
+    }
+
+    // -------- animated bar --------
+    function animateBar(durationMs) {
+      return new Promise(function (resolve) {
+        var barWidth = 30;
+        var steps = randInt(30, 50);
+        var stepDelay = durationMs / steps;
+        var line = newLine();
+        var i = 0;
+        function frame() {
+          try {
+            if (i > steps) { resolve(); return; }
+            var rawPercent = (i/steps)*100;
+            var percent = Math.max(0, Math.min(100, Math.round(rawPercent + randInt(-1,1))));
+            if (i === steps) percent = 100;
+            var filled = Math.round((percent/100)*barWidth);
+            var bar = '█'.repeat(filled) + '-'.repeat(barWidth - filled);
+            line.textContent = '[' + bar + '] ' + percent + '%';
+            scrollToBottom();
+            if (Math.random() < 0.06) flicker();
+            i++;
+            setTimeout(frame, stepDelay);
+          } catch (e) { resolve(); }
+        }
+        frame();
+      });
+    }
+
+    // -------- stages (~45-60s total across all bars) --------
+    var STAGES = [
+      { message: 'Initializing...', data: function(){ return printData('Session ID', fakeId('SES')).then(function(){ return printData('Timestamp', fakeTimestamp()); }); } },
+      { message: 'Loading Security Modules...', data: function(){ return printData('Modules Loaded', randInt(4,48)).then(function(){ return printData('Checksum', fakeHex(16)); }); } },
+      { message: 'Authenticating...', data: function(){ return printData('Node IP', fakeIP()).then(function(){ return printData('Auth Token', fakeHex(20)); }); } },
+      { message: 'Analyzing User...', data: function(){ return printData('Behavior Hash', fakeHash().slice(0,24)).then(function(){ return printData('Pattern Match', fakePercentStat()); }); } },
+      { message: 'Collecting Random Data...', data: function(){ return printData('Entries Found', randInt(100,99999)).then(function(){ return printData('CPU Usage', fakePercentStat()); }); } },
+      { message: 'Scanning Memory...', data: function(){ return printData('Memory Address', '0x' + fakeHex(12)).then(function(){ return printData('RAM Usage', fakePercentStat()); }); } },
+      { message: 'Decrypting...', data: function(){ return printData('Cipher Hash', fakeHash()).then(function(){ return printData('Key Fragment', fakeHex(16)); }); } },
+      { message: 'Synchronizing...', data: function(){ return printData('Sync Timestamp', fakeTimestamp()).then(function(){ return printData('Nodes Synced', randInt(2,64)); }); } },
+      { message: 'Processing...', data: function(){ return printData('Process ID', fakeId('PID')).then(function(){ return printData('Buffer Hash', fakeHash().slice(0,32)); }); } },
+      { message: 'Finalizing...', data: function(){ return printData('Checksum', fakeHex(16)).then(function(){ return printData('Status', 'OK'); }); } }
+    ];
+
+    function runStages() {
+      var chain = Promise.resolve();
+      STAGES.forEach(function (stage) {
+        chain = chain
+          .then(function () { return typeLine('\n> ' + stage.message); })
+          .then(function () { return stage.data(); })
+          .then(function () { return animateBar(randInt(4500, 5500)); })
+          .catch(function () {});
+      });
+      return chain;
+    }
+
+    // -------- dramatic reveal / punchline --------
+    function showFinalScreen() {
+      return sleep(600)
+        .then(function () {
+          clearTerminal();
+          flicker();
+          return typeLine('=================================================');
+        })
+        .then(function () { return typeLine('            ANALYSIS COMPLETE'); })
+        .then(function () { return typeLine('=================================================\n'); })
+        .then(function () { return sleep(500); })
+        .then(function () { return typeLine('You have been officially diagnosed with...'); })
+        .then(function () { return typeLine('📱 Too Much Curiosity Syndrome 😂\n'); })
+        .then(function () { return sleep(400); })
+        .then(function () { return typeLine('Symptoms:'); })
+        .then(function () { return typeLine('✔ Clicks every random link.'); })
+        .then(function () { return typeLine('✔ Waits patiently for loading bars.'); })
+        .then(function () { return typeLine('✔ Hopes for a secret ending.'); })
+        .then(function () { return typeLine('✔ Easily fooled by harmless pranks.\n'); })
+        .then(function () { return sleep(400); })
+        .then(function () { return typeLine('Recommended Treatment:'); })
+        .then(function () { return typeLine('Touch some grass 🌱'); })
+        .then(function () { return typeLine('Drink water 💧'); })
+        .then(function () { return typeLine('And stop clicking suspicious links. 😂\n'); })
+        .then(function () { return sleep(600); })
+        .then(function () { return typeLine('--------------------------------------------'); })
+        .then(function () { return sleep(300); })
+        .then(function () { return typeLine('😂 GOT YOU!\n'); })
+        .then(function () { return typeLine('No files were accessed.'); })
+        .then(function () { return typeLine('No information was collected.'); })
+        .then(function () { return typeLine('Nothing was hacked.\n'); })
+        .then(function () { return typeLine('This was only a harmless visual prank.\n'); })
+        .then(function () { return typeLine('Have a nice day! 😄'); })
+        .catch(function () {});
+    }
+
+    // -------- full sequence --------
+    function runSequence() {
+      clearTerminal();
+      runAgainBtn.classList.add('hidden');
+
+      typeLine('=== SYSTEM ANALYSIS :: ' + fakeId('OP') + ' ===')
+        .then(function () { return typeLine('Start Time: ' + fakeTimestamp()); })
+        .then(function () { return runStages(); })
+        .then(function () { return showFinalScreen(); })
+        .then(function () { return sleep(8000); })
+        .then(function () { runAgainBtn.classList.remove('hidden'); })
+        .catch(function () { runAgainBtn.classList.remove('hidden'); });
+    }
+
+    // -------- subtle matrix-style falling background --------
+    function setupMatrixBackground() {
+      var fontSize = 16;
+      var columns, drops;
+      var chars = 'アイウエオカキクケコサシスセソ0123456789ABCDEF';
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        columns = Math.floor(canvas.width / fontSize);
+        drops = [];
+        for (var i = 0; i < columns; i++) drops[i] = randInt(-40, 0);
+      }
+
+      function draw() {
+        try {
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = '#00FF41';
+          ctx.font = fontSize + 'px monospace';
+
+          for (var i = 0; i < drops.length; i++) {
+            var ch = chars.charAt(randInt(0, chars.length - 1));
+            ctx.fillText(ch, i * fontSize, drops[i] * fontSize);
+            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+            drops[i]++;
+          }
+        } catch (e) {}
+      }
+
+      resize();
+      window.addEventListener('resize', resize);
+      setInterval(draw, 60);
+    }
+
+    runAgainBtn.addEventListener('click', function () { runSequence(); });
+
+    function boot() {
+      setupMatrixBackground();
+      runSequence();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', boot);
+    } else {
+      boot();
+    }
+
+  })();
+</script>
+
+</body>
+</html>
